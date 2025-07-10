@@ -27,6 +27,7 @@ colgroup col:nth-child(4) { width: 15%; }
 input[type="text"] {
   width: 300px;
   padding: 0.5em;
+  margin-bottom: 0;
 }
 
 .example {
@@ -37,11 +38,15 @@ input[type="text"] {
 .section-header {
   font-weight: bold;
   background: #f0f0f0;
+  text-align: left;
   cursor: pointer;
-  padding: 0.5em;
+  user-select: none;
+  padding-left: 0.5em;
 }
 
 .section-header span {
+  display: inline-block;
+  width: 1.2em;
   margin-right: 0.3em;
 }
 
@@ -67,7 +72,8 @@ body.dark table {
   border-color: #444;
 }
 
-body.dark th, body.dark td {
+body.dark th,
+body.dark td {
   background-color: #2c2c2c;
   border-color: #555;
   color: #e0e0e0;
