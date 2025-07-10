@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Feld-Mapping Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    h2, h3 {
+      margin-top: 30px;
+    }
+
+    .data-types-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .data-types-container button {
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: white;
+      border-radius: 5px;
+      transition: 0.2s;
+    }
+
+    .data-types-container button.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+
+    .systems-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .system {
+      border: 2px solid transparent;
+      border-radius: 8px;
+      background: white;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 120px;
+    }
+
+    .system.selected {
+      border-color: #007bff;
+      background-color: #e6f0ff;
+    }
+
+    .system img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Feld-Mapping Tool</h2>
+
+  <h3>Datenart wählen:</h3>
+  <div id="dataTypes" class="data-types-container"></div>
+
+  <h3>Quellsystem auswählen:</h3>
+  <div id="sourceSystems" class="systems-container"></div>
+
+  <h3>Zielsystem auswählen:</h3>
+  <div id="targetSystems" class="systems-container"></div>
+
+  <button onclick="renderMapping()">Mapping anzeigen</button>
+
+  <table id="mappingTable">
+    <thead>
+      <tr>
+        <th>Feld im Quellsystem</th>
+        <th>→</th>
+        <th>Feld im Zielsystem</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const dataTypes = ["POI", "Tour", "Event"];
+    let selectedDataType = dataTypes[0];
+
+    const systems = {
+      source: [
+        { id: "systemA", name: "System A", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/LogoA.png/100px-LogoA.png" },
+        { id: "systemB", name: "System B", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/LogoB.png/100px-LogoB.png" }
+      ],
+      target: [
+        { id: "systemX", name: "System X", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/LogoX.png/100px-LogoX.png" },
+        { id: "systemY", name: "System Y", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/LogoY.png/100px-LogoY.png" }
+      ]
+    };
+
+    const mappings = {
+      POI: {
+        systemA: {
+          systemX: { name: "title", description: "summary" },
+          systemY: { name: "poi_name", description: "poi_desc" }
+        },
+        systemB: {
+          systemX: { title: "poi_headline", content: "poi_body" }
+        }
+      },
+      Tour: {
+        systemA: {
+          systemX: { route: "track", difficulty: "level" }
+        }
+      },
+      Event: {
+        systemA: {
+          systemX: { event_name: "headline", time: "start_time" }
+        }
+      }
+    };
+
+    let selectedSource = null;
+    let selectedTarget = null;
+
+    function createSystemCards(containerId, systemsList, type) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      systemsList.forEach(system => {
+        const div = document.createElement("div");
+        div.className = "system";
+        div.dataset.id = system.id;
+        div.innerHTML = `<img src="${system.logo}" alt="${system.name}"><div>${system.name}</div>`;
+        div.onclick = () => {
+          document.querySelectorAll(`#${containerId} .system`).forEach(el => el.classList.remove("selected"));
+          div.classList.add("selected");
+          if (type === "source") selectedSource = system.id;
+          else selectedTarget = system.id;
+        };
+        container.appendChild(div);
+      });
+    }
+
+    function createDataTypeButtons() {
+      const container = document.getElementById("dataTypes");
+      dataTypes.forEach(type => {
+        const btn = document.createElement("button");
+        btn.textContent = type;
+        if (type === selectedDataType) btn.classList.add("active");
+        btn.onclick = () => {
+          selectedDataType = type;
+          document.querySelectorAll("#dataTypes button").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function renderMapping() {
+      const tableBody = document.querySelector("#mappingTable tbody");
+      tableBody.innerHTML = "";
+
+      if (!selectedSource || !selectedTarget) {
+        tableBody.innerHTML = `<tr><td colspan="3">Bitte Quell- und Zielsystem auswählen.</td></tr>`;
+        return;
+      }
+
+      const selectedMapping = mappings[selectedDataType]?.[selectedSource]?.[selectedTarget];
+
+      if (!selectedMapping) {
+        tableBody.innerHTML = `<tr><td colspan="3">Kein Mapping für diese Kombination vorhanden.</td></tr>`;
+        return;
+      }
+
+      for (const [sourceField, targetField] of Object.entries(selectedMapping)) {
+        const row = `<tr><td>${sourceField}</td><td>→</td><td>${targetField}</td></tr>`;
+        tableBody.insertAdjacentHTML("beforeend", row);
+      }
+    }
+
+    // Initialisierung
+    createSystemCards("sourceSystems", systems.source, "source");
+    createSystemCards("targetSystems", systems.target, "target");
+    createDataTypeButtons();
+  </script>
+</body>
+</html>
