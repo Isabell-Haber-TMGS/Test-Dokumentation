@@ -4,27 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Parameter Meta-Search</title>
-  <link rel="stylesheet" href="styles.css">
+
+  <!-- Google Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- CSS-Datei -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<h1>Parameter Meta-Search</h1>
-<button id="toggle-mode" onclick="toggleDarkMode()">
-  <span class="material-icons" id="mode-icon">dark_mode</span>
-  Dark Mode
-</button>
+  <h1>Parameter Meta-Search</h1>
 
-<label for="filter">Filter:</label>
-<input type="text" id="filter" placeholder="z.B. rdf, schema.org..." oninput="renderAllTables(); showSuggestions()" autocomplete="off" />
-<ul id="suggestions"></ul>
+  <button id="toggle-mode" onclick="toggleDarkMode()">
+    <span class="material-icons" id="mode-icon">dark_mode</span>
+    Dark Mode
+  </button>
 
-<div id="sections"></div>
+  <label for="filter">Filter:</label>
+  <input
+    type="text"
+    id="filter"
+    placeholder="z.B. rdf, schema.org..."
+    oninput="renderAllTables(); showSuggestions()"
+    autocomplete="off"
+  />
+  <ul id="suggestions"></ul>
 
-<footer>
-  <p>&copy; 2025 SaTourN. Alle Rechte vorbehalten.</p>
-</footer>
+  <div id="sections"></div>
 
-<script src="script.js"></script>
+  <footer>
+    <p>&copy; 2025 SaTourN. Alle Rechte vorbehalten.</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
