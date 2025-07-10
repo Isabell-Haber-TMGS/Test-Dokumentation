@@ -6,8 +6,8 @@ let selectedSource = null;
 
 const systems = {
   source: [
-    { id: "systemA", name: "Outdooractive", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/LogoA.png/100px-LogoA.png" },
-    { id: "systemB", name: "Feratel", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/LogoB.png/100px-LogoB.png" }
+    { id: "systemA", name: "Outdooractive", logo: "https://corporate.outdooractive.com/press/wp-content/uploads/sites/12/2023/01/Logo-Outdooractive-green.png" },
+    { id: "systemB", name: "Feratel", logo: "https://www.feratel.com/typo3conf/ext/icc_template/Resources/Public/Img/logo-feratel.svg" }
   ]
 };
 
