@@ -13,8 +13,7 @@ const systems = {
 
 const mappings = {
   POI: {
-    systemA: { name: "title", description: "summary" },
-    systemB: { title: "poi_headline", content: "poi_body" }
+    systemA: { name: "title", description: "summary" }
   },
   Tour: {
     systemA: { route: "track", difficulty: "level" }
