@@ -153,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
   renderAllTables();
-  toggleDarkMode(); // einmal ein/aus zur Initialisierung
+  toggleDarkMode(); // Ein/Aus zur Initialisierung
   toggleDarkMode();
 });
+
