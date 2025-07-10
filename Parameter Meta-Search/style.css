@@ -1,139 +1,136 @@
-const style = document.createElement('style');
-style.textContent = `
-  body {
-    font-family: sans-serif;
-    margin: 2em;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0.5em;
-  }
-  th, td {
-    border: 1px solid #ccc;
-    padding: 0.5em;
-    text-align: left;
-  }
-  colgroup col:nth-child(1) { width: 20%; }
-  colgroup col:nth-child(2) { width: 35%; }
-  colgroup col:nth-child(3) { width: 30%; }
-  colgroup col:nth-child(4) { width: 15%; }
+body {
+  font-family: sans-serif;
+  margin: 2em;
+}
 
-  input[type="text"] {
-    width: 300px;
-    padding: 0.5em;
-    margin-bottom: 0;
-  }
+h1 {
+  margin-top: 0;
+}
 
-  .example {
-    font-family: monospace;
-    color: #444;
-  }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5em;
+}
 
-  .section-header {
-    font-weight: bold;
-    background: #f0f0f0;
-    text-align: left;
-    cursor: pointer;
-    user-select: none;
-    padding-left: 0.5em;
-  }
+th, td {
+  border: 1px solid #ccc;
+  padding: 0.5em;
+  text-align: left;
+}
 
-  .section-header span {
-    display: inline-block;
-    width: 1.2em;
-    margin-right: 0.3em;
-  }
+colgroup col:nth-child(1) { width: 20%; }
+colgroup col:nth-child(2) { width: 35%; }
+colgroup col:nth-child(3) { width: 30%; }
+colgroup col:nth-child(4) { width: 15%; }
 
-  .collapsible {
-    display: block;
-  }
+input[type="text"] {
+  width: 300px;
+  padding: 0.5em;
+}
 
-  .collapsed {
-    display: none;
-  }
+.example {
+  font-family: monospace;
+  color: #444;
+}
 
-  mark {
-    background: yellow;
-    padding: 0 2px;
-  }
+.section-header {
+  font-weight: bold;
+  background: #f0f0f0;
+  cursor: pointer;
+  padding: 0.5em;
+}
 
-  body.dark {
-    background: #1e1e1e;
-    color: #e0e0e0;
-  }
+.section-header span {
+  margin-right: 0.3em;
+}
 
-  body.dark table {
-    border-color: #444;
-  }
+.collapsible {
+  display: block;
+}
 
-  body.dark th, body.dark td {
-    background-color: #2c2c2c;
-    border-color: #555;
-    color: #e0e0e0;
-  }
+.collapsed {
+  display: none;
+}
 
-  body.dark .section-header {
-    background: #333;
-    color: #fff;
-  }
+mark {
+  background: yellow;
+  padding: 0 2px;
+}
 
-  body.dark input[type="text"] {
-    background: #2c2c2c;
-    color: #e0e0e0;
-    border: 1px solid #555;
-  }
+body.dark {
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
 
-  body.dark mark {
-    background: #ffcc00;
-    color: #000;
-  }
+body.dark table {
+  border-color: #444;
+}
 
-  #toggle-mode {
-    float: right;
-    margin-top: -3em;
-    padding: 0.4em 1em;
-    background: #eee;
-    border: 1px solid #ccc;
-    cursor: pointer;
-  }
+body.dark th, body.dark td {
+  background-color: #2c2c2c;
+  border-color: #555;
+  color: #e0e0e0;
+}
 
-  body.dark #toggle-mode {
-    background: #444;
-    color: #eee;
-    border-color: #666;
-  }
+body.dark .section-header {
+  background: #333;
+  color: #fff;
+}
 
-  #suggestions {
-    list-style: none;
-    padding: 0;
-    margin: 0.2em 0;
-    border: 1px solid #ccc;
-    max-width: 300px;
-    position: absolute;
-    background: #fff;
-    z-index: 10;
-    display: none;
-  }
+body.dark input[type="text"] {
+  background: #2c2c2c;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
 
-  #suggestions li {
-    padding: 0.4em;
-    cursor: pointer;
-  }
+body.dark mark {
+  background: #ffcc00;
+  color: #000;
+}
 
-  #suggestions li:hover {
-    background: #f0f0f0;
-  }
+#toggle-mode {
+  float: right;
+  margin-top: -3em;
+  padding: 0.4em 1em;
+  background: #eee;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
 
-  body.dark #suggestions {
-    background: #333;
-    color: #fff;
-    border-color: #666;
-  }
+body.dark #toggle-mode {
+  background: #444;
+  color: #eee;
+  border-color: #666;
+}
 
-  body.dark #suggestions li:hover {
-    background: #444;
-  }
-`;
-document.head.appendChild(style);
+#suggestions {
+  list-style: none;
+  padding: 0;
+  margin: 0.2em 0;
+  border: 1px solid #ccc;
+  max-width: 300px;
+  position: absolute;
+  background: #fff;
+  z-index: 10;
+  display: none;
+}
 
+#suggestions li {
+  padding: 0.4em;
+  cursor: pointer;
+}
+
+#suggestions li:hover {
+  background: #f0f0f0;
+}
+
+body.dark #suggestions {
+  background: #333;
+  color: #fff;
+  border-color: #666;
+}
+
+body.dark #suggestions li:hover {
+  background: #444;
+}
