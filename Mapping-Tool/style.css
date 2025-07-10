@@ -1,0 +1,87 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: #f9f9f9;
+}
+
+h2, h3 {
+  margin-top: 30px;
+}
+
+.data-types-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.data-types-container button {
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 5px;
+  transition: 0.2s;
+}
+
+.data-types-container button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.systems-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.system {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: white;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: 120px;
+}
+
+.system.selected {
+  border-color: #007bff;
+  background-color: #e6f0ff;
+}
+
+.system img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background: #007bff;
+  color: white;
+}
