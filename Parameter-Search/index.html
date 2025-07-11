@@ -1,1 +1,26 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prefix-Dokumentation</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
+  <header>
+    <h1>🔎 Parameter-Dokumentation</h1>
+    <button id="toggle-mode" aria-label="Dark Mode umschalten">🌙 Dark Mode</button>
+  </header>
+
+  <main>
+    <label for="filter">Filter:</label>
+    <input type="text" id="filter" aria-label="Filter für Parameter" placeholder="z.B. rdf, schema.org..." autocomplete="off" />
+    <ul id="suggestions" role="listbox" aria-label="Vorschläge"></ul>
+
+    <div id="sections" role="region" aria-live="polite"></div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
