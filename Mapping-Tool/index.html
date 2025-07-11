@@ -4,13 +4,10 @@
   <meta charset="UTF-8" />
   <title>Feld-Mapping Tool</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- jsPDF & autoTable (moderne Versionen) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-
   <h2>Mapping-Tool</h2>
 
   <h3>Datenart wählen:</h3>
@@ -22,6 +19,12 @@
   <h3>Sprache wählen:</h3>
   <div id="languageSelector" class="data-types-container"></div>
 
+  <!-- 🔍 Globale Suche -->
+  <div class="search-container">
+    <input type="text" id="globalSearchInput" placeholder="Globale Suche..." oninput="globalSearch()" list="globalSuggestions" />
+    <datalist id="globalSuggestions"></datalist>
+  </div>
+
   <div id="mappingDisplay"></div>
 
   <div class="export-buttons">
@@ -29,6 +32,9 @@
     <button id="exportBtnCSV" onclick="exportCSV()">Als CSV speichern</button>
     <button id="exportBtnJSON" onclick="exportJSON()">Als JSON speichern</button>
   </div>
+
+  <!-- Ergebnisse der globalen Suche -->
+  <div id="globalSearchResults" style="margin-top: 40px;"></div>
 
   <script src="script.js"></script>
 </body>
