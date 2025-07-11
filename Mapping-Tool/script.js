@@ -1,4 +1,3 @@
-// Variablen
 const dataTypes = ["POI", "Tour", "Event", "Gastro", "Hotel", "Angebot"];
 const languages = ["de", "en"];
 let selectedDataType = dataTypes[0];
@@ -7,16 +6,8 @@ let selectedSource = null;
 
 const systems = {
   source: [
-    {
-      id: "systemA",
-      name: "Outdooractive",
-      logo: "https://corporate.outdooractive.com/press/wp-content/uploads/sites/12/2023/01/Logo-Outdooractive-green.png"
-    },
-    {
-      id: "systemB",
-      name: "Feratel",
-      logo: "https://www.feratel.com/typo3conf/ext/icc_template/Resources/Public/Img/logo-feratel.svg"
-    }
+    { id: "systemA", name: "Outdooractive", logo: "https://corporate.outdooractive.com/press/wp-content/uploads/sites/12/2023/01/Logo-Outdooractive-green.png" },
+    { id: "systemB", name: "Feratel", logo: "https://www.feratel.com/typo3conf/ext/icc_template/Resources/Public/Img/logo-feratel.svg" }
   ]
 };
 
@@ -31,51 +22,26 @@ const mappings = {
   Event: {
     systemA: { event_name: "headline", time: "start_time" }
   },
-  Gastro: {
-    systemA: {}
-  }
+  Gastro: { systemA: {} }
 };
 
 const translations = {
   de: {
-    name: "Name",
-    description: "Beschreibung",
-    title: "Titel",
-    summary: "Zusammenfassung",
-    content: "Inhalt",
-    route: "Route",
-    difficulty: "Schwierigkeitsgrad",
-    event_name: "Veranstaltungsname",
-    time: "Zeit",
-    field_type: "Feldtyp",
-    source_field: "Feld im Quellsystem",
-    target_field: "Feld im Zielsystem",
-    headline: "Überschrift",
-    start_time: "Startzeit",
-    poi_headline: "POI-Titel",
-    poi_body: "POI-Inhalt"
+    name: "Name", description: "Beschreibung", title: "Titel", summary: "Zusammenfassung",
+    content: "Inhalt", route: "Route", difficulty: "Schwierigkeitsgrad",
+    event_name: "Veranstaltungsname", time: "Zeit", field_type: "Feldtyp",
+    source_field: "Feld im Quellsystem", target_field: "Feld im Zielsystem",
+    headline: "Überschrift", start_time: "Startzeit", poi_headline: "POI-Titel", poi_body: "POI-Inhalt"
   },
   en: {
-    name: "Name",
-    description: "Description",
-    title: "Title",
-    summary: "Summary",
-    content: "Content",
-    route: "Route",
-    difficulty: "Difficulty",
-    event_name: "Event Name",
-    time: "Time",
-    field_type: "Field type",
-    source_field: "Source field",
-    target_field: "Target field",
-    headline: "Headline",
-    start_time: "Start Time",
-    poi_headline: "POI Headline",
-    poi_body: "POI Content"
+    name: "Name", description: "Description", title: "Title", summary: "Summary",
+    content: "Content", route: "Route", difficulty: "Difficulty",
+    event_name: "Event Name", time: "Time", field_type: "Field type",
+    source_field: "Source field", target_field: "Target field",
+    headline: "Headline", start_time: "Start Time", poi_headline: "POI Headline", poi_body: "POI Content"
   }
 };
 
-// Feldtyp ableiten
 function inferFieldType(name) {
   name = name.toLowerCase();
   if (name.includes("time") || name.includes("date")) return "Datum/Zeit";
@@ -86,7 +52,6 @@ function inferFieldType(name) {
   return "Text";
 }
 
-// UI: Systemkarten erzeugen
 function createSystemCards(containerId, systemsList) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
@@ -106,7 +71,6 @@ function createSystemCards(containerId, systemsList) {
   });
 }
 
-// UI: Datentypen erzeugen
 function createDataTypeButtons() {
   const container = document.getElementById("dataTypes");
   container.innerHTML = '';
@@ -124,7 +88,6 @@ function createDataTypeButtons() {
   });
 }
 
-// UI: Sprachwahl erzeugen
 function createLanguageButtons() {
   const container = document.getElementById("languageSelector");
   container.innerHTML = '';
@@ -142,7 +105,6 @@ function createLanguageButtons() {
   });
 }
 
-// Mapping-Tabelle anzeigen
 function renderMapping() {
   const container = document.getElementById("mappingDisplay");
   container.innerHTML = "";
@@ -170,42 +132,67 @@ function renderMapping() {
     <tbody></tbody>
   `;
   const tbody = table.querySelector("tbody");
+  const suggestions = new Set();
 
   for (const [sourceField, targetField] of Object.entries(mapping)) {
     const sourceLabel = t[sourceField] || sourceField;
     const targetLabel = t[targetField] || targetField;
     const type = inferFieldType(sourceField);
+    suggestions.add(sourceLabel);
+    suggestions.add(targetLabel);
     tbody.innerHTML += `<tr><td>${type}</td><td>${sourceLabel}</td><td>${targetLabel}</td></tr>`;
+  }
+
+  const datalist = document.getElementById("searchSuggestions");
+  if (datalist) {
+    datalist.innerHTML = "";
+    suggestions.forEach(val => {
+      datalist.innerHTML += `<option value="${val}">`;
+    });
   }
 
   container.appendChild(table);
 }
 
-// Export: PDF
 function exportPDF() {
   const table = document.getElementById("mappingTable");
   if (!table) return alert("Keine Tabelle zum Exportieren vorhanden.");
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
   const t = translations[selectedLanguage];
-  const title = table.querySelector("thead tr:first-child th")?.textContent || "Mapping-Tabelle";
+  const sourceName = systems.source.find(s => s.id === selectedSource)?.name || selectedSource;
+  const targetName = "SaTourN";
+
+  const title = selectedLanguage === "de"
+    ? `Mapping von ${sourceName} zu ${targetName} für ${selectedDataType}`
+    : `Mapping from ${sourceName} to ${targetName} for ${selectedDataType}`;
+
   doc.setFontSize(14);
   doc.text(title, 105, 15, { align: "center" });
+
   const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
     const cells = row.querySelectorAll("td");
     return [cells[0].textContent.trim(), cells[1].textContent.trim(), cells[2].textContent.trim()];
   });
+
   doc.autoTable({
     head: [[t.field_type, t.source_field, t.target_field]],
     body: rows,
     startY: 25,
     theme: 'grid',
-    headStyles: { fillColor: [0, 123, 255] }
+    headStyles: { fillColor: [0, 123, 255] },
+    columnStyles: {
+      0: { cellWidth: 50 },
+      1: { cellWidth: 70 },
+      2: { cellWidth: 70 }
+    },
+    tableWidth: 190
   });
+
   doc.save("mapping.pdf");
 }
 
-// Export: CSV
 function exportCSV() {
   const table = document.getElementById("mappingTable");
   if (!table) return alert("Keine Tabelle zum Exportieren vorhanden.");
@@ -223,7 +210,6 @@ function exportCSV() {
   link.click();
 }
 
-// Export: JSON
 function exportJSON() {
   const table = document.getElementById("mappingTable");
   if (!table) return alert("Keine Tabelle zum Exportieren vorhanden.");
@@ -242,7 +228,6 @@ function exportJSON() {
   link.click();
 }
 
-// Globale Suche
 function globalSearch() {
   const input = document.getElementById("globalSearchInput").value.toLowerCase();
   const container = document.getElementById("globalSearchResults");
@@ -290,7 +275,6 @@ function globalSearch() {
   });
 }
 
-// Bei Klick aus globaler Suche aktivieren
 function selectAndShow(dataType, systemId) {
   selectedDataType = dataType;
   document.querySelectorAll("#dataTypes button").forEach(btn => {
@@ -304,7 +288,7 @@ function selectAndShow(dataType, systemId) {
   document.getElementById("mappingDisplay")?.scrollIntoView({ behavior: "smooth" });
 }
 
-// Init
+// Initialisierung
 createSystemCards("sourceSystems", systems.source);
 createDataTypeButtons();
 createLanguageButtons();
