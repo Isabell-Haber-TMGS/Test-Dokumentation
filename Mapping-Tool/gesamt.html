@@ -70,11 +70,23 @@
       margin-top: 20px;
       background: white;
     }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
+    td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+  background: #0056b3;
+  color: white;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
     th {
       background: #0056b3;
       color: white;
@@ -96,6 +108,22 @@
     #exportBtnPDF:hover { background: #218838; }
     #exportBtnCSV:hover { background: #138496; }
     #exportBtnJSON:hover { background: #e0a800; }
+
+table th:nth-child(1),
+table td:nth-child(1) {
+  width: 30%;
+}
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 35%;
+}
+
+table th:nth-child(3),
+table td:nth-child(3) {
+  width: 35%;
+}
+
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -286,27 +314,39 @@
     }
 
     function exportPDF() {
-      const table = document.getElementById("mappingTable");
-      if (!table) return alert("Keine Tabelle zum Exportieren vorhanden.");
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const t = translations[selectedLanguage];
-      const title = table.querySelector("thead tr:first-child th")?.textContent || "Mapping-Tabelle";
-      doc.setFontSize(14);
-      doc.text(title, 105, 15, { align: "center" });
-      const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-        const cells = row.querySelectorAll("td");
-        return [cells[0].textContent.trim(), cells[1].textContent.trim(), cells[2].textContent.trim()];
-      });
-      doc.autoTable({
-        head: [[t.field_type, t.source_field, t.target_field]],
-        body: rows,
-        startY: 25,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 123, 255] }
-      });
-      doc.save("mapping.pdf");
-    }
+  const table = document.getElementById("mappingTable");
+  if (!table) return alert("Keine Tabelle zum Exportieren vorhanden.");
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const t = translations[selectedLanguage];
+  const sourceName = systems.source.find(s => s.id === selectedSource)?.name || selectedSource;
+  const targetName = "SaTourN";
+
+  // 🏷 Mehrsprachiger Titel
+  const title =
+    selectedLanguage === "de"
+      ? `Mapping von ${sourceName} zu ${targetName} für ${selectedDataType}`
+      : `Mapping from ${sourceName} to ${targetName} for ${selectedDataType}`;
+
+  doc.setFontSize(14);
+  doc.text(title, 105, 15, { align: "center" });
+
+  const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
+    const cells = row.querySelectorAll("td");
+    return [cells[0].textContent.trim(), cells[1].textContent.trim(), cells[2].textContent.trim()];
+  });
+
+  doc.autoTable({
+    head: [[t.field_type, t.source_field, t.target_field]],
+    body: rows,
+    startY: 25,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 123, 255] }
+  });
+
+  doc.save("mapping.pdf");
+}
 
     function exportCSV() {
       const table = document.getElementById("mappingTable");
