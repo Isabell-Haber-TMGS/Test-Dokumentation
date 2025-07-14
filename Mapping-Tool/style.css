@@ -3,18 +3,15 @@ body {
   padding: 20px;
   background: #f9f9f9;
 }
-
 h2, h3 {
   margin-top: 30px;
 }
-
 .data-types-container, .systems-container {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
-
 .data-types-container button, .export-buttons button {
   padding: 8px 16px;
   font-size: 14px;
@@ -24,13 +21,11 @@ h2, h3 {
   border-radius: 5px;
   transition: 0.2s;
 }
-
 .data-types-container button.active {
   background: #007bff;
   color: white;
   border-color: #007bff;
 }
-
 .system {
   border: 2px solid transparent;
   border-radius: 8px;
@@ -42,48 +37,37 @@ h2, h3 {
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   width: 120px;
 }
-
 .system.selected {
   border-color: #007bff;
   background-color: #e6f0ff;
 }
-
 .system img {
   width: 120px;
   height: 120px;
   object-fit: contain;
   margin-bottom: 12px;
 }
-
 .search-container {
   position: absolute;
   top: 20px;
   right: 20px;
 }
-
 input[type="text"] {
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
   background: white;
 }
-
-th, td {
+td, th {
   border: 1px solid #ccc;
   padding: 10px;
 }
-
-td {
-  text-align: left;
-}
-
 th {
   text-align: center;
   background: #0056b3;
@@ -93,59 +77,46 @@ th {
   top: 0;
   z-index: 1;
 }
-
 table tbody tr:nth-child(even) {
   background-color: #f2f2f2;
 }
-
 table tbody tr:hover {
   background-color: #e6f7ff;
 }
-
 .export-buttons {
   margin-top: 20px;
   display: flex;
   gap: 10px;
 }
-
 #exportBtnPDF {
   background: #28a745;
   color: white;
 }
-
 #exportBtnCSV {
   background: #17a2b8;
   color: white;
 }
-
 #exportBtnJSON {
   background: #ffc107;
   color: black;
 }
-
 #exportBtnPDF:hover {
   background: #218838;
 }
-
 #exportBtnCSV:hover {
   background: #138496;
 }
-
 #exportBtnJSON:hover {
   background: #e0a800;
 }
-
-/* Feste Spaltenbreiten */
 table th:nth-child(1),
 table td:nth-child(1) {
   width: 30%;
 }
-
 table th:nth-child(2),
 table td:nth-child(2) {
   width: 35%;
 }
-
 table th:nth-child(3),
 table td:nth-child(3) {
   width: 35%;
