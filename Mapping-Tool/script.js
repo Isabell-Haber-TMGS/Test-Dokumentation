@@ -1,3 +1,4 @@
+// === Datenquellen und Übersetzungen ===
 const dataTypes = ["POI", "Tour", "Event", "Gastro", "Hotel", "Angebot"];
 const languages = ["de", "en"];
 let selectedDataType = dataTypes[0];
@@ -30,7 +31,7 @@ const translations = {
     name: "Name", description: "Beschreibung", title: "Titel", summary: "Zusammenfassung",
     content: "Inhalt", route: "Route", difficulty: "Schwierigkeitsgrad",
     event_name: "Veranstaltungsname", time: "Zeit", field_type: "Feldtyp",
-    source_field: "Feld im Quellsystem", target_field: "Feld im Zielsystem",
+    source_field: "Feld im Quellsystem", target_field: "Feld in SaTourN",
     headline: "Überschrift", start_time: "Startzeit", poi_headline: "POI-Titel", poi_body: "POI-Inhalt"
   },
   en: {
@@ -42,6 +43,7 @@ const translations = {
   }
 };
 
+// === Hilfsfunktionen ===
 function inferFieldType(name) {
   name = name.toLowerCase();
   if (name.includes("time") || name.includes("date")) return "Datum/Zeit";
@@ -52,6 +54,7 @@ function inferFieldType(name) {
   return "Text";
 }
 
+// === UI-Erstellung ===
 function createSystemCards(containerId, systemsList) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
@@ -104,7 +107,6 @@ function createLanguageButtons() {
     container.appendChild(btn);
   });
 }
-
 function renderMapping() {
   const container = document.getElementById("mappingDisplay");
   container.innerHTML = "";
@@ -163,10 +165,10 @@ function exportPDF() {
   const t = translations[selectedLanguage];
   const sourceName = systems.source.find(s => s.id === selectedSource)?.name || selectedSource;
   const targetName = "SaTourN";
-
-  const title = selectedLanguage === "de"
-    ? `Mapping von ${sourceName} zu ${targetName} für ${selectedDataType}`
-    : `Mapping from ${sourceName} to ${targetName} for ${selectedDataType}`;
+  const title =
+    selectedLanguage === "de"
+      ? `Mapping von ${sourceName} zu ${targetName} für ${selectedDataType}`
+      : `Mapping from ${sourceName} to ${targetName} for ${selectedDataType}`;
 
   doc.setFontSize(14);
   doc.text(title, 105, 15, { align: "center" });
@@ -181,13 +183,7 @@ function exportPDF() {
     body: rows,
     startY: 25,
     theme: 'grid',
-    headStyles: { fillColor: [0, 123, 255] },
-    columnStyles: {
-      0: { cellWidth: 50 },
-      1: { cellWidth: 70 },
-      2: { cellWidth: 70 }
-    },
-    tableWidth: 190
+    headStyles: { fillColor: [0, 123, 255] }
   });
 
   doc.save("mapping.pdf");
@@ -288,7 +284,7 @@ function selectAndShow(dataType, systemId) {
   document.getElementById("mappingDisplay")?.scrollIntoView({ behavior: "smooth" });
 }
 
-// Initialisierung
+// === Initialisierung ===
 createSystemCards("sourceSystems", systems.source);
 createDataTypeButtons();
 createLanguageButtons();
