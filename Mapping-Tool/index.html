@@ -3,38 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <title>Feld-Mapping Tool</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h2>Mapping-Tool</h2>
+  <div class="container">
+    <h1>Mapping-Tool</h1>
 
-  <h3>Datenart wählen:</h3>
-  <div id="dataTypes" class="data-types-container"></div>
+    <div class="heading-row">
+      <h3 class="no-margin">Datenart wählen</h3>
+      <div class="search">
+        <label for="globalSearchInput">Globale Suche</label>
+        <div>
+          <input type="text" id="globalSearchInput" placeholder="Begriff, Feld oder Kategorie" list="globalSuggestions" />
+          <button id="clearSearch" class="btn" title="Suche leeren" type="button">Leeren</button>
+        </div>
+        <datalist id="globalSuggestions"></datalist>
+      </div>
+    </div>
 
-  <h3>Quellsystem auswählen:</h3>
-  <div id="sourceSystems" class="systems-container"></div>
+    <div id="dataTypes" class="chips"></div>
 
-  <h3>Sprache wählen:</h3>
-  <div id="languageSelector" class="data-types-container"></div>
+    <h3>Datentyp wählen</h3>
+    <div class="segment" role="tablist" aria-label="Ansicht">
+      <button id="viewFieldBtn" role="tab" aria-selected="true" class="active" type="button">Feld</button>
+      <button id="viewCategoryBtn" role="tab" aria-selected="false" type="button">Kategorie</button>
+    </div>
 
-  <div class="search-container">
-    <input type="text" id="globalSearchInput" placeholder="Globale Suche..." oninput="globalSearch()" list="globalSuggestions" />
-    <datalist id="globalSuggestions"></datalist>
+    <div id="mappingDisplay" class="card"></div>
   </div>
 
-  <div id="mappingDisplay"></div>
-
-  <div class="export-buttons">
-    <button id="exportBtnPDF" onclick="exportPDF()">Als PDF speichern</button>
-    <button id="exportBtnCSV" onclick="exportCSV()">Als CSV speichern</button>
-    <button id="exportBtnJSON" onclick="exportJSON()">Als JSON speichern</button>
-  </div>
-
-  <div id="globalSearchResults" style="margin-top: 40px;"></div>
-
-  <script src="script.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
-
