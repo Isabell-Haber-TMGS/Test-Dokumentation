@@ -1,290 +1,289 @@
-// === Datenquellen und Übersetzungen ===
+// Daten/State
 const dataTypes = ["POI", "Tour", "Event", "Gastro", "Hotel", "Angebot"];
-const languages = ["de", "en"];
-let selectedDataType = dataTypes[0];
-let selectedLanguage = languages[0];
-let selectedSource = null;
+let selectedDataType = null;
+let selectedSource = "systemA";
+let viewMode = "field";
 
-const systems = {
-  source: [
-    { id: "systemA", name: "Outdooractive", logo: "https://corporate.outdooractive.com/press/wp-content/uploads/sites/12/2023/01/Logo-Outdooractive-green.png" },
-    { id: "systemB", name: "Feratel", logo: "https://www.feratel.com/typo3conf/ext/icc_template/Resources/Public/Img/logo-feratel.svg" }
-  ]
-};
+const systems = { source: [{ id: "systemA", name: "Outdooractive" }] };
+const byId = new Map(systems.source.map(s => [s.id, s]));
+const targetName = "SaTourN";
 
 const mappings = {
-  POI: {
-    systemA: { name: "title", description: "summary" },
-    systemB: { title: "poi_headline", content: "poi_body" }
-  },
-  Tour: {
-    systemA: { route: "track", difficulty: "level" }
-  },
-  Event: {
-    systemA: { event_name: "headline", time: "start_time" }
-  },
-  Gastro: { systemA: {} }
+  POI:   { systemA: { name: "title", description: "summary" } },
+  Tour:  { systemA: { route: "track", difficulty: "level" } },
+  Event: { systemA: { event_name: "headline", time: "start_time" } },
+  Gastro:{ systemA: {} }
+};
+// Falls vorhanden, hier Kategorie-Mappings eintragen
+const categoryMappings = undefined;
+
+const labels = {
+  source_field: "Feld in Outdooractive",
+  target_field: "Feld in SaTourN",
+  category_source: "Kategorie in Outdooractive",
+  category_target: "Kategorie in SaTourN",
+  name: "Name", description: "Beschreibung", title: "Titel", summary: "Zusammenfassung",
+  content: "Inhalt", route: "Route", difficulty: "Schwierigkeitsgrad",
+  event_name: "Veranstaltungsname", time: "Zeit", headline: "Überschrift",
+  start_time: "Startzeit", poi_headline: "POI-Titel", poi_body: "POI-Inhalt"
 };
 
-const translations = {
-  de: {
-    name: "Name", description: "Beschreibung", title: "Titel", summary: "Zusammenfassung",
-    content: "Inhalt", route: "Route", difficulty: "Schwierigkeitsgrad",
-    event_name: "Veranstaltungsname", time: "Zeit", field_type: "Feldtyp",
-    source_field: "Feld im Quellsystem", target_field: "Feld in SaTourN",
-    headline: "Überschrift", start_time: "Startzeit", poi_headline: "POI-Titel", poi_body: "POI-Inhalt"
-  },
-  en: {
-    name: "Name", description: "Description", title: "Title", summary: "Summary",
-    content: "Content", route: "Route", difficulty: "Difficulty",
-    event_name: "Event Name", time: "Time", field_type: "Field type",
-    source_field: "Source field", target_field: "Target field",
-    headline: "Headline", start_time: "Start Time", poi_headline: "POI Headline", poi_body: "POI Content"
-  }
+// DOM-Helper
+const $  = s => document.querySelector(s);
+const el = (tag, props = {}, ...kids) => {
+  const n = document.createElement(tag);
+  Object.entries(props).forEach(([k,v]) => {
+    if (k === "class") n.className = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (k === "attrs") Object.entries(v).forEach(([a,val]) => n.setAttribute(a,val));
+    else if (k === "role" || k.startsWith("aria-") || k.startsWith("data-") || k.includes("-")) n.setAttribute(k, v);
+    else n[k] = v;
+  });
+  kids.flat().forEach(k => n.append(k?.nodeType ? k : document.createTextNode(k)));
+  return n;
 };
+const L = k => labels[k] || k;
 
-// === Hilfsfunktionen ===
-function inferFieldType(name) {
-  name = name.toLowerCase();
-  if (name.includes("time") || name.includes("date")) return "Datum/Zeit";
-  if (name.includes("desc") || name.includes("summary") || name.includes("body")) return "Text";
-  if (name.includes("title") || name.includes("name") || name.includes("headline")) return "Kurztext";
-  if (name.includes("difficulty") || name.includes("level")) return "Kategorie";
-  if (name.includes("route") || name.includes("track")) return "Pfad";
-  return "Text";
-}
+// Sortierfunktion
+function makeSortable(table){
+  const ths = [...table.querySelectorAll('thead th')];
+  ths.forEach((th,i)=>{
+    th.style.cursor='pointer';
+    th.setAttribute('aria-sort','none');
+    th.title = 'Klicken zum Sortieren';
+    th.addEventListener('click', ()=>{
+      const dir = th.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+      ths.forEach(h=>{ if(h!==th){ h.removeAttribute('data-sort-dir'); h.setAttribute('aria-sort','none'); }});
+      th.dataset.sortDir = dir;
+      th.setAttribute('aria-sort', dir === 'asc' ? 'ascending' : 'descending');
 
-// === UI-Erstellung ===
-function createSystemCards(containerId, systemsList) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  systemsList.forEach(system => {
-    const div = document.createElement("div");
-    div.className = "system";
-    div.dataset.id = system.id;
-    div.innerHTML = `<img src="${system.logo}" alt="${system.name}"><div>${system.name}</div>`;
-    div.onclick = () => {
-      document.querySelectorAll(`#${containerId} .system`).forEach(el => el.classList.remove("selected"));
-      div.classList.add("selected");
-      selectedSource = system.id;
-      renderMapping();
-    };
-    if (system.id === selectedSource) div.classList.add("selected");
-    container.appendChild(div);
+      const rows=[...table.tBodies[0].rows];
+      rows.sort((a,b)=>{
+        const va=a.cells[i].textContent.trim().toLowerCase();
+        const vb=b.cells[i].textContent.trim().toLowerCase();
+        return dir==='asc'
+          ? va.localeCompare(vb, 'de', { sensitivity:'base' })
+          : vb.localeCompare(va, 'de', { sensitivity:'base' });
+      });
+      rows.forEach(r=>table.tBodies[0].appendChild(r));
+    });
   });
 }
 
-function createDataTypeButtons() {
-  const container = document.getElementById("dataTypes");
-  container.innerHTML = '';
-  dataTypes.forEach(type => {
-    const btn = document.createElement("button");
-    btn.textContent = type;
-    if (type === selectedDataType) btn.classList.add("active");
-    btn.onclick = () => {
-      selectedDataType = type;
-      document.querySelectorAll("#dataTypes button").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderMapping();
-    };
-    container.appendChild(btn);
+// Chips (Datenarten)
+function renderTypeChips(){
+  const wrap = $("#dataTypes");
+  wrap.innerHTML = "";
+  dataTypes.forEach(t => {
+    const chip = el("button", {
+      class: "chip" + (selectedDataType===t ? " active" : ""),
+      textContent: t,
+      type: "button",
+      onclick: e => {
+        selectedDataType = t;
+        wrap.querySelectorAll(".chip").forEach(b => b.classList.toggle("active", b === e.currentTarget));
+        renderMapping();
+      }
+    });
+    wrap.append(chip);
   });
 }
 
-function createLanguageButtons() {
-  const container = document.getElementById("languageSelector");
-  container.innerHTML = '';
-  languages.forEach(lang => {
-    const btn = document.createElement("button");
-    btn.textContent = lang.toUpperCase();
-    if (lang === selectedLanguage) btn.classList.add("active");
-    btn.onclick = () => {
-      selectedLanguage = lang;
-      document.querySelectorAll("#languageSelector button").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderMapping();
-    };
-    container.appendChild(btn);
-  });
-}
+// Mapping-Ansicht
 function renderMapping() {
-  const container = document.getElementById("mappingDisplay");
+  const container = $("#mappingDisplay");
   container.innerHTML = "";
-  if (!selectedSource || !selectedDataType) {
-    container.innerHTML = "<p>Bitte ein Quellsystem und eine Datenart auswählen.</p>";
+
+  if (!selectedDataType) {
+    container.innerHTML = `<div class="table-wrap" style="color:var(--muted)">Bitte zuerst Datenart und Datentyp wählen.</div>`;
     return;
   }
-  const mapping = mappings[selectedDataType]?.[selectedSource];
-  if (!mapping || Object.keys(mapping).length === 0) {
-    container.innerHTML = "<p>Kein Mapping für diese Kombination vorhanden.</p>";
+  const map = (viewMode === 'category')
+    ? (categoryMappings?.[selectedDataType]?.[selectedSource] || {})
+    : (mappings[selectedDataType]?.[selectedSource] || {});
+  if (!map || !Object.keys(map).length) {
+    container.innerHTML = `<div class="table-wrap" style="color:var(--muted)">Kein Mapping für diese Kombination vorhanden.</div>`;
     return;
   }
 
-  const t = translations[selectedLanguage];
-  const sourceName = systems.source.find(s => s.id === selectedSource)?.name || selectedSource;
-  const targetName = "SaTourN";
+  const tools = el('div',{class:'sticky-tools'},
+    el('div',{class:'pills'},
+      el('span',{class:'pill-name'}, byId.get(selectedSource)?.name || selectedSource),
+      el('span',{class:'pill-sep','aria-hidden':'true'}, '→'),
+      el('span',{class:'pill-name'}, targetName)
+    ),
+    el('div',{class:'pills'}, `${selectedDataType} • ${viewMode === 'category' ? 'Kategorien' : 'Felder'}`)
+  );
+  container.append(tools);
 
-  const table = document.createElement("table");
-  table.id = "mappingTable";
-  table.innerHTML = `
-    <thead>
-      <tr><th colspan="3">${sourceName} → ${targetName}</th></tr>
-      <tr><th>${t.field_type}</th><th>${t.source_field}</th><th>${t.target_field}</th></tr>
-    </thead>
-    <tbody></tbody>
-  `;
-  const tbody = table.querySelector("tbody");
-  const suggestions = new Set();
+  const wrap = el('div',{class:'table-wrap'});
+  const entries = Object.entries(map).map(([src, tgt]) => ({ src: L(src), tgt: L(tgt) }));
 
-  for (const [sourceField, targetField] of Object.entries(mapping)) {
-    const sourceLabel = t[sourceField] || sourceField;
-    const targetLabel = t[targetField] || targetField;
-    const type = inferFieldType(sourceField);
-    suggestions.add(sourceLabel);
-    suggestions.add(targetLabel);
-    tbody.innerHTML += `<tr><td>${type}</td><td>${sourceLabel}</td><td>${targetLabel}</td></tr>`;
-  }
+  const headers = (viewMode === "category")
+    ? [L("category_source"), L("category_target")]
+    : [L("source_field"), L("target_field")];
 
-  const datalist = document.getElementById("searchSuggestions");
-  if (datalist) {
-    datalist.innerHTML = "";
-    suggestions.forEach(val => {
-      datalist.innerHTML += `<option value="${val}">`;
+  const thead = el("thead", {},
+    el("tr", {}, ...headers.map(h => el("th", { textContent: h })))
+  );
+
+  const rows = entries.map(r => {
+    const left  = el("td",{class:'code'}, r.src);
+    const right = (r.tgt == null || String(r.tgt).trim() === "")
+      ? el("td",{}, el("span",{class:'cell-missing'}, "— fehlt —"))
+      : el("td",{}, r.tgt);
+    const tr = el("tr", {}, left, right);
+    if (r.tgt == null || String(r.tgt).trim() === "") tr.classList.add('row-warn');
+    return tr;
+  });
+
+  const tbody = el("tbody", {}, ...rows);
+  const table = el("table", { id:"mappingTable" }, thead, tbody);
+  wrap.append(table);
+  container.append(wrap);
+
+  makeSortable(table);
+}
+
+/* ---------- Globale Suche über alle Datenarten/-typen ---------- */
+const globalIndex = []; // {dataType, view, sourceId, sourceName, srcKey, tgtKey, srcLabel, tgtLabel}
+
+function buildGlobalIndex(){
+  globalIndex.length = 0;
+
+  // Felder
+  Object.entries(mappings || {}).forEach(([dataType, bySource]) => {
+    Object.entries(bySource || {}).forEach(([sourceId, mapObj]) => {
+      const sourceName = byId.get(sourceId)?.name || sourceId;
+      Object.entries(mapObj || {}).forEach(([srcKey, tgtKey]) => {
+        globalIndex.push({
+          dataType, view:'field', sourceId, sourceName,
+          srcKey, tgtKey, srcLabel:L(srcKey), tgtLabel:L(tgtKey)
+        });
+      });
+    });
+  });
+
+  // Kategorien (optional)
+  if (typeof categoryMappings !== 'undefined' && categoryMappings) {
+    Object.entries(categoryMappings || {}).forEach(([dataType, bySource]) => {
+      Object.entries(bySource || {}).forEach(([sourceId, mapObj]) => {
+        const sourceName = byId.get(sourceId)?.name || sourceId;
+        Object.entries(mapObj || {}).forEach(([srcKey, tgtKey]) => {
+          globalIndex.push({
+            dataType, view:'category', sourceId, sourceName,
+            srcKey, tgtKey, srcLabel:L(srcKey), tgtLabel:L(tgtKey)
+          });
+        });
+      });
     });
   }
-
-  container.appendChild(table);
 }
 
-function exportPDF() {
-  const table = document.getElementById("mappingTable");
-  if (!table) return alert("Keine Tabelle zum Exportieren vorhanden.");
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  const t = translations[selectedLanguage];
-  const sourceName = systems.source.find(s => s.id === selectedSource)?.name || selectedSource;
-  const targetName = "SaTourN";
-  const title =
-    selectedLanguage === "de"
-      ? `Mapping von ${sourceName} zu ${targetName} für ${selectedDataType}`
-      : `Mapping from ${sourceName} to ${targetName} for ${selectedDataType}`;
-
-  doc.setFontSize(14);
-  doc.text(title, 105, 15, { align: "center" });
-
-  const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-    const cells = row.querySelectorAll("td");
-    return [cells[0].textContent.trim(), cells[1].textContent.trim(), cells[2].textContent.trim()];
+function buildGlobalSuggestions() {
+  const set = new Set();
+  globalIndex.forEach(r => {
+    [r.dataType, r.sourceName, r.srcKey, r.tgtKey, r.srcLabel, r.tgtLabel]
+      .filter(Boolean).forEach(v => set.add(String(v)));
   });
-
-  doc.autoTable({
-    head: [[t.field_type, t.source_field, t.target_field]],
-    body: rows,
-    startY: 25,
-    theme: 'grid',
-    headStyles: { fillColor: [0, 123, 255] }
-  });
-
-  doc.save("mapping.pdf");
+  const globalList  = $("#globalSuggestions");
+  const options = [...set].sort((a,b)=>a.localeCompare(b,'de',{sensitivity:'base'}));
+  globalList.innerHTML = options.map(v => `<option value="${v}">`).join('');
 }
 
-function exportCSV() {
-  const table = document.getElementById("mappingTable");
-  if (!table) return alert("Keine Tabelle zum Exportieren vorhanden.");
-  const t = translations[selectedLanguage];
-  const rows = Array.from(table.querySelectorAll("tbody tr"));
-  let csv = `${t.field_type},${t.source_field},${t.target_field}\n`;
-  rows.forEach(row => {
-    const cells = row.querySelectorAll("td");
-    csv += `"${cells[0].textContent}","${cells[1].textContent}","${cells[2].textContent}"\n`;
-  });
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "mapping.csv";
-  link.click();
+function matchesRow(r, q){
+  const hay = [
+    r.dataType, r.view, r.sourceId, r.sourceName,
+    r.srcKey, r.tgtKey, r.srcLabel, r.tgtLabel
+  ].filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(q);
 }
 
-function exportJSON() {
-  const table = document.getElementById("mappingTable");
-  if (!table) return alert("Keine Tabelle zum Exportieren vorhanden.");
-  const data = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-    const cells = row.querySelectorAll("td");
-    return {
-      type: cells[0].textContent.trim(),
-      source: cells[1].textContent.trim(),
-      target: cells[2].textContent.trim()
-    };
-  });
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "mapping.json";
-  link.click();
-}
-
-function globalSearch() {
-  const input = document.getElementById("globalSearchInput").value.toLowerCase();
-  const container = document.getElementById("globalSearchResults");
+function renderSearchResults(query){
+  const container = $("#mappingDisplay");
   container.innerHTML = "";
-  if (!input) return;
-  const results = [];
-  for (const [dataType, systemMap] of Object.entries(mappings)) {
-    for (const [systemId, mapping] of Object.entries(systemMap)) {
-      for (const [sourceField, targetField] of Object.entries(mapping)) {
-        const t = translations[selectedLanguage];
-        const sourceLabel = t[sourceField] || sourceField;
-        const targetLabel = t[targetField] || targetField;
-        const type = inferFieldType(sourceField);
-        if (
-          sourceLabel.toLowerCase().includes(input) ||
-          targetLabel.toLowerCase().includes(input)
-        ) {
-          results.push({ dataType, systemId, sourceLabel, targetLabel, type });
-        }
-      }
-    }
-  }
-  if (results.length === 0) {
-    container.innerHTML = "<p>Keine Treffer gefunden.</p>";
+
+  const q = query.trim().toLowerCase();
+  const results = q ? globalIndex.filter(r => matchesRow(r, q)) : [];
+
+  const info = el('div', { class:'sticky-tools' },
+    el('div', { class:'pills' },
+      el('span', { class:'pill-name' }, 'Suche'),
+      el('span', { class:'pill-sep', 'aria-hidden':'true' }, '→'),
+      el('span', { class:'pill-name' }, q ? `"${query}"` : 'leer')
+    ),
+    el('div', { class:'pills' }, `${results.length} Treffer`)
+  );
+  container.append(info);
+
+  const wrap = el('div',{class:'table-wrap'});
+  if (!q) {
+    wrap.append(el('div', { style:'color:var(--muted)' }, 'Bitte einen Suchbegriff eingeben.'));
+    container.append(wrap);
     return;
   }
-  const table = document.createElement("table");
-  table.innerHTML = `
-    <thead><tr>
-      <th>Datenart</th><th>System</th><th>${translations[selectedLanguage].field_type}</th>
-      <th>${translations[selectedLanguage].source_field}</th><th>${translations[selectedLanguage].target_field}</th>
-    </tr></thead><tbody>
-    ${results.map(r => `
-      <tr style="cursor:pointer" onclick="selectAndShow('${r.dataType}', '${r.systemId}')">
-        <td>${r.dataType}</td><td>${systems.source.find(s => s.id === r.systemId)?.name || r.systemId}</td>
-        <td>${r.type}</td><td>${r.sourceLabel}</td><td>${r.targetLabel}</td>
-      </tr>`).join("")}
-  </tbody>`;
-  container.appendChild(table);
+  if (results.length === 0) {
+    wrap.append(el('div', { style:'color:var(--muted)' }, 'Keine Treffer gefunden.'));
+    container.append(wrap);
+    return;
+  }
 
-  const list = document.getElementById("globalSuggestions");
-  list.innerHTML = "";
-  new Set(results.flatMap(r => [r.sourceLabel, r.targetLabel])).forEach(val => {
-    list.innerHTML += `<option value="${val}">`;
+  const headers = ['Datenart', 'Typ', 'Quelle', 'Quelle Feld/Kategorie', 'Ziel Feld/Kategorie'];
+  const thead = el('thead', {}, el('tr', {}, ...headers.map(h => el('th', { textContent: h }))));
+  const rows = results.map(r => {
+    const typ = r.view === 'category' ? 'Kategorie' : 'Feld';
+    const left = `${r.srcLabel} (${r.srcKey})`;
+    const right = r.tgtKey == null || String(r.tgtKey).trim()==='' ? '— fehlt —' : `${r.tgtLabel} (${r.tgtKey})`;
+    const tr = el('tr', {},
+      el('td', {}, r.dataType),
+      el('td', {}, typ),
+      el('td', {}, r.sourceName),
+      el('td', { class:'code' }, left),
+      el('td', {}, right)
+    );
+    if (r.tgtKey == null || String(r.tgtKey).trim()==='') tr.classList.add('row-warn');
+    return tr;
   });
+  const tbody = el('tbody', {}, ...rows);
+  const table = el('table', { id:'searchResultsTable' }, thead, tbody);
+  wrap.append(table);
+  container.append(wrap);
+
+  makeSortable(table);
 }
 
-function selectAndShow(dataType, systemId) {
-  selectedDataType = dataType;
-  document.querySelectorAll("#dataTypes button").forEach(btn => {
-    btn.classList.toggle("active", btn.textContent === dataType);
-  });
-  selectedSource = systemId;
-  document.querySelectorAll("#sourceSystems .system").forEach(div => {
-    div.classList.toggle("selected", div.dataset.id === systemId);
-  });
+/* Events */
+$("#viewFieldBtn").addEventListener("click", () => {
+  viewMode = "field";
+  $("#viewFieldBtn").classList.add("active"); $("#viewFieldBtn").setAttribute('aria-selected','true');
+  $("#viewCategoryBtn").classList.remove("active"); $("#viewCategoryBtn").setAttribute('aria-selected','false');
   renderMapping();
-  document.getElementById("mappingDisplay")?.scrollIntoView({ behavior: "smooth" });
-}
+});
+$("#viewCategoryBtn").addEventListener("click", () => {
+  viewMode = "category";
+  $("#viewCategoryBtn").classList.add("active"); $("#viewCategoryBtn").setAttribute('aria-selected','true');
+  $("#viewFieldBtn").classList.remove("active"); $("#viewFieldBtn").setAttribute('aria-selected','false');
+  renderMapping();
+});
 
-// === Initialisierung ===
-createSystemCards("sourceSystems", systems.source);
-createDataTypeButtons();
-createLanguageButtons();
+/* Globale Suche */
+const globalInput = $("#globalSearchInput");
+const clearBtn = $("#clearSearch");
+globalInput.addEventListener("input", () => {
+  const q = globalInput.value;
+  if (q.trim() === "") {
+    renderMapping();
+  } else {
+    renderSearchResults(q);
+  }
+});
+clearBtn.addEventListener("click", () => {
+  globalInput.value = "";
+  renderMapping();
+});
+
+/* Init */
+buildGlobalIndex();
+buildGlobalSuggestions();
+renderTypeChips();
+renderMapping();
