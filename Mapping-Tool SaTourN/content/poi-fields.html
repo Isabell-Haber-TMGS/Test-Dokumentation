@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>POI – Felder</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0;
+      padding: 16px;
+      background: #fff;
+      color: #111827;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    th, td {
+      border: 1px solid #d9dee8;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    thead th {
+      background: #f5f7ff;
+      font-weight: 600;
+    }
+    tbody tr:nth-child(even) {
+      background: #fafbff;
+    }
+    tbody tr.missing td {
+      background: #fff7ed;
+      color: #b45309;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h2>POI – Feld-Mapping</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Feld in Outdooractive</th>
+        <th>Feld in SaTourN</th>
+        <th>Bemerkung</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>name</td>
+        <td>title</td>
+        <td>Kurzbezeichnung des POI</td>
+      </tr>
+      <tr>
+        <td>description</td>
+        <td>summary</td>
+        <td>Zusammenfassung, Kurzbeschreibung</td>
+      </tr>
+      <tr>
+        <td>poi_body</td>
+        <td>content</td>
+        <td>Detaillierte Beschreibung</td>
+      </tr>
+      <tr class="missing">
+        <td>image_url</td>
+        <td>— fehlt —</td>
+        <td>Noch keine Zuordnung definiert</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
